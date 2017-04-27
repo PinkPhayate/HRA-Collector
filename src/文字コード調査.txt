@@ -1,0 +1,24 @@
++ OK だけど文字化け
+
+word = '皐月賞'
+url = 'http://db.netkeiba.com/'
+post_data = {'pid':'race_list', 'word':word,'x':0,'y':0}
+encoded_post_data = urllib.parse.urlencode(post_data).encode(encoding='eucjp')
+with urllib.request.urlopen(url, data=encoded_post_data) as res:
+   html = res.read()
+   print(html)
+
++ コンパイルできない
+url = 'http://db.netkeiba.com/'
+post_data = {'pid':'race_list', 'word':word,'x':0,'y':0}
+encoded_post_data = urllib.parse.urlencode(post_data).encode(encoding='eucjp')
+with urllib.request.urlopen(url, data=encoded_post_data) as res:
+   html = res.read().decode('utf8')
+   print(html)
+
+   url = 'http://db.netkeiba.com/'
+   post_data = {'pid':'race_list', 'word':word,'x':0,'y':0}
+   encoded_post_data = urllib.parse.urlencode(post_data).encode(encoding='eucjp')
+   with urllib.request.urlopen(url, data=encoded_post_data) as res:
+      html = res.read()
+      print(html)
