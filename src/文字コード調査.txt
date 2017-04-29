@@ -1,4 +1,12 @@
 + OK だけど文字化け
+import csv
+import re
+import json
+import lxml
+import pandas as pd
+from bs4 import BeautifulSoup
+import urllib.request
+import chardet
 
 word = '皐月賞'
 url = 'http://db.netkeiba.com/'
@@ -8,17 +16,31 @@ with urllib.request.urlopen(url, data=encoded_post_data) as res:
    html = res.read()
    print(html)
 
-+ コンパイルできない
++ ベストプラクティス
+word = u'皐月賞'
 url = 'http://db.netkeiba.com/'
 post_data = {'pid':'race_list', 'word':word,'x':0,'y':0}
-encoded_post_data = urllib.parse.urlencode(post_data).encode(encoding='eucjp')
+encoded_post_data = urllib.parse.urlencode(post_data).encode(encoding='utf8')
 with urllib.request.urlopen(url, data=encoded_post_data) as res:
-   html = res.read().decode('utf8')
+   html = res.read().decode('euc-jp', 'ignore')
    print(html)
 
-   url = 'http://db.netkeiba.com/'
-   post_data = {'pid':'race_list', 'word':word,'x':0,'y':0}
-   encoded_post_data = urllib.parse.urlencode(post_data).encode(encoding='eucjp')
-   with urllib.request.urlopen(url, data=encoded_post_data) as res:
-      html = res.read()
-      print(html)
+      r = opener.open("http://search.yahoo.co.jp/search" ,
+                     data = "ei=Shift_JIS&p=" \
+                     + urllib.parse.quote_plus("天使ちゃんマジ天使",encoding="eucjp"))
+     print(r.readall().decode("utf-8"))
+
+
+word = '皐月賞'
+
+prefix = 'y=0&word='
+keyword = urllib.parse.quote_plus(word,encoding="eucjp")
+suffix = '&pid=race_list&x=0'
+
+param = prefix + keyword + suffix
+with urllib.request.urlopen(url, data=param.encode('utf8')) as res:
+    html = res.read().decode('euc-jp', 'ignore')
+    print(html)
+
+opener = urllib.request.build_opener()
+r = opener.open(url,urllib.parse.quote_plus.param).encode('utf8'))
