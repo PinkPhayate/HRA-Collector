@@ -149,7 +149,7 @@ def get_request_via_post(word):
     _param = _param_creator(word=word)
     with urllib.request.urlopen(DOMAIN, data=_param.encode('utf8')) as res:
         html = res.read().decode('euc-jp', 'ignore')
-    return html
+        return html
 
 
 def get_request_via_get(url):
@@ -199,7 +199,5 @@ def main(words):
 
 if __name__ == '__main__':
     # word = '皐月賞'
-    words = []
-    words.append('皐月賞')
-    words.append('G1')
+    words = [u'NHKマイル']
     main(words)
