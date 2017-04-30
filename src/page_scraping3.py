@@ -9,18 +9,43 @@ import record_saver as saver
 
 DOMAIN = 'http://db.netkeiba.com/'
 
+def scrape_rid(word, source):
+    """
+    1. read page source
+    2. scrape rid (race id)
+    return -> race_id list
+    TODO: 1単語だけの検索だと、他のレースが出てきてしまう場合がある
+    """
+    soup = BeautifulSoup(source, "lxml")
+    table = soup.find("table", attrs={"class": "nk_tb_common race_table_01"})
+    list = []
+    # limitter for 10 years
+    for tr in table.findAll('tr'):
+        if len(list) > 12:
+            break
 
-def scrape_race_info(url, output_file):
+        for td in tr.findAll("td", attrs={"class": "txt_l"}):
+            for link in td.findAll('a'):
+                url = link.attrs['href']
+                title = link.attrs['title']
+                if "race" in url and word in title:
+                    tmp = url.split('/')
+                    list.append(tmp[2])
+    return list
+
+
+def scrape_race_info(source, output_file, word):
     # read page source code
-    f = open('./../Data/Race/' + output_file, 'w')
+    f = open('./../DATA/Race/' + output_file, 'w')
     csvWriter = csv.writer(f)
-    soup = BeautifulSoup(urllib.request.urlopen(url), "lxml")
+    # soup = BeautifulSoup(urllib.request.urlopen(url), "lxml")
+    soup = BeautifulSoup(source, "lxml")
     hid_list = []
     # Extract status
     title = soup.find('h1')
     print(title.text)
     # if title.text is not correct (e.g. another race), remove
-    if '高松宮記念' not in title.text:
+    if word not in title.text:
         return hid_list
     table = soup.find(class_='race_table_01 nk_tb_common')
     for tr in table.findAll('tr', ''):
@@ -48,7 +73,7 @@ def scrape_race_info(url, output_file):
 
 def scrape_res(url, output_file):
     # read page source code
-    f = open('./../Data/Result/res_' + output_file, 'w')
+    f = open('./../DATA/Result/res_' + output_file, 'w')
     csvWriter = csv.writer(f)
     soup = BeautifulSoup(urllib.request.urlopen(url), "lxml")
 
@@ -69,44 +94,12 @@ def scrape_res(url, output_file):
     f.close()
 
 
-def scrape_rid():
-    '''
-    1. read page source
-    2. scrape rid (race id)
-    return -> race_id list
-    '''
-    # source = './../Resource/stayers'    # must get this page source by hand
-    source = './../Resource/race_history'    # must get this page source by hand
-    soup = BeautifulSoup(open(source), "lxml")
-    table = soup.find("table", attrs={"class": "nk_tb_common race_table_01"})
-    list = []
-    # limitter for 10 years
-    for tr in table.findAll('tr'):
-        if len(list) > 12:
-            break
-
-        for td in tr.findAll("td", attrs={"class": "txt_l"}):
-            # links = td.find_all('a')
-            for link in td.findAll('a'):
-                # if 'href' in link.attrs:
-                url = link.attrs['href']
-                if "race" in link.attrs['href']:
-                    tmp = url.split('/')
-                    list.append(tmp[4])
-
-    with open('./../Resource/rid_list.csv', 'w') as f:
-        writer = csv.writer(f, lineterminator='\n')
-        writer.writerow(list)
-    return list
-
-
-def scrape_race_odds(years):
+def normalize_race_odds(years):
     odds_dict = {}
     for year in years:
         y = str(year)
         output_file = y + '.csv'
-        f = open('./../Data/Result/res_' + output_file, "rt", encoding='utf-8')
-        # f = open('./../Data/Result/res_'+ output_file, 'rb')
+        f = open('./../DATA/Result/res_' + output_file, "rt", encoding='utf-8')
         dataReader = csv.reader(f)
         dict = {}
         for row in dataReader:
@@ -120,26 +113,20 @@ def scrape_race_odds(years):
             dict[row[0]] = {'num': num, 'odds': row[2]}
 
         odds_dict[y] = dict
-    f = open("./../Data/odds_dict.json", "w")
+    f = open("./../DATA/Result/odds_dict.json", "w")
     json.dump(odds_dict, f, ensure_ascii=False)
     f.close()
 
 
-def scrape_horse_history(hid):
-    print(hid)
-    f = open('./../Data/Horse/' + hid + '.csv', 'w')
+def scrape_horse_history(source, output_file):
+    f = open('./../DATA/Horse/' + output_file, 'w')
     csvWriter = csv.writer(f)
-    url = 'http://db.netkeiba.com/horse/' + hid + '/'
-    # soup = BeautifulSoup(urllib2.urlopen(url), "html")
-    # soup = soup.encode('utf-8')
-    soup = BeautifulSoup(urllib.request.urlopen(url), "lxml")
+    soup = BeautifulSoup(source, "lxml")
     soup.prettify(formatter=lambda s: s.replace(u'\xa0', 'None'))
     history_df = pd.DataFrame([])
 
     table = soup.find(
         "table", attrs={"class": "db_h_race_results nk_tb_common"})
-    # history_df = pd.DataFrame([])
-    # tablr = table.encode('utf-8')
     for tr in table.findAll('tr'):
         list = []
         flg = True
@@ -149,46 +136,20 @@ def scrape_horse_history(hid):
 
         csvWriter.writerow(list)
     f.close()
-    # return history_df.T    # return list
 
-
-def scrape_rid(word, source):
-    '''
-    1. read page source
-    2. scrape rid (race id)
-    return -> race_id list
-    // TODO: 1単語だけの検索だと、他のレースが出てきてしまう場合がある
-    '''
-    # source = './../Resource/stayers'    # must get this page source by hand
-    # must get this page source by hand
-    #
-    soup = BeautifulSoup(source, "lxml")
-    table = soup.find("table", attrs={"class": "nk_tb_common race_table_01"})
-    list = []
-    # limitter for 10 years
-    for tr in table.findAll('tr'):
-        if len(list) > 12:
-            break
-
-        for td in tr.findAll("td", attrs={"class": "txt_l"}):
-            for link in td.findAll('a'):
-                url = link.attrs['href']
-                title = link.attrs['title']
-                if "race" in url and word in title:
-                    tmp = url.split('/')
-                    list.append(tmp[2])
-
-    return list
 
 
 def get_request_via_post(word):
-    url = 'http://db.netkeiba.com/'
     # create paramator with consts x=0,y=0,pid=race_list
     _param = _param_creator(word=word)
     with urllib.request.urlopen(DOMAIN, data=_param.encode('utf8')) as res:
         html = res.read().decode('euc-jp', 'ignore')
     return html
 
+
+def get_request_via_get(url):
+    source = urllib.request.urlopen(url)
+    return source
 
 def _param_creator(word):
     prefix = 'y=0&word='
@@ -201,30 +162,34 @@ def main(word):
     # 1. get supecified race ids
     source = get_request_via_post(word)
     rids = scrape_rid(word, source)
-    filename = './../records/race_id_list.csv'
+    filename = './../DATA/race_id_list.csv'
     saver.writeCsv(rids, filename)
-    print(rids)
 
-    hid_list = []
+    horce_dict = {}
 
-    for year in rids:
-        url = DOMAIN　+'race/' + year + '/'
-        output_file = year + '.csv'
-        # scrape RACE data
-        print('get list of hource_id: ' + year)
-        # get list of hource_id who attend the race in year(rid)
-        old_rids = scrape_race_info(url, output_file)
-
-        print('get history of house')
-        for old_rid in old_rids:
-            # get history of house which attend the race in year(rid)
-            scrape_horse_history(old_rid)
-
+    # 2. get list of hource_id who attend the race in year(rid)
+    for rid in rids:
+        print('get list of hource_id: ' + rid)
+        url = DOMAIN + 'race/' + rid + '/'
+        source = get_request_via_get(url)
+        output_file = rid + '.csv'
+        hids = scrape_race_info(source, output_file, word)
+        horce_dict[rid] = hids
         # scrape RATE data
         scrape_res(url, output_file)
 
+    # 3. get history data of entried horse
+    for rid in rids:
+        print('get history of house in ' + rid)
+        old_hids = horce_dict[rid]
+        for hid in old_hids:
+            url = DOMAIN + 'horse/' + hid + '/'
+            source = get_request_via_get(url)
+            output_file = hid + '.csv'
+            scrape_horse_history(source, output_file)
+
     # normalize rate data
-    scrape_race_odds(rids)
+    normalize_race_odds(rids)
 
 
 if __name__ == '__main__':
