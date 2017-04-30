@@ -5,6 +5,7 @@ import lxml
 import pandas as pd
 from bs4 import BeautifulSoup
 import urllib.request
+import record_saver as saver
 
 DOMAIN = 'http://db.netkeiba.com/'
 
@@ -196,11 +197,12 @@ def _param_creator(word):
     return prefix + keyword + suffix
 
 
-def main():
+def main(word):
     # 1. get supecified race ids
-    word = '皐月賞'
     source = get_request_via_post(word)
     rids = scrape_rid(word, source)
+    filename = './../records/race_id_list.csv'
+    saver.writeCsv(rids, filename)
     print(rids)
 
     hid_list = []
@@ -226,4 +228,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    word = '皐月賞'
+    main(word)
