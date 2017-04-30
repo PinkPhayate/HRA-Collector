@@ -9,12 +9,11 @@ import record_saver as saver
 
 DOMAIN = 'http://db.netkeiba.com/'
 
-def scrape_rid(word, source):
+def scrape_rid(words, source):
     """
     1. read page source
     2. scrape rid (race id)
     return -> race_id list
-    TODO: 1単語だけの検索だと、他のレースが出てきてしまう場合がある
     """
     soup = BeautifulSoup(source, "lxml")
     table = soup.find("table", attrs={"class": "nk_tb_common race_table_01"})
@@ -28,11 +27,17 @@ def scrape_rid(word, source):
             for link in td.findAll('a'):
                 url = link.attrs['href']
                 title = link.attrs['title']
-                if "race" in url and word in title:
+                if "race" in url and _validate_race_title(title, words):
                     tmp = url.split('/')
                     list.append(tmp[2])
     return list
 
+
+def _validate_race_title(title, words):
+    for word in words:
+        if word not in title:
+            return False
+    return True
 
 def scrape_race_info(source, output_file, word):
     # read page source code
@@ -158,10 +163,10 @@ def _param_creator(word):
     return prefix + keyword + suffix
 
 
-def main(word):
+def main(words):
     # 1. get supecified race ids
-    source = get_request_via_post(word)
-    rids = scrape_rid(word, source)
+    source = get_request_via_post(words[0])
+    rids = scrape_rid(words, source)
     filename = './../DATA/race_id_list.csv'
     saver.writeCsv(rids, filename)
 
@@ -173,7 +178,7 @@ def main(word):
         url = DOMAIN + 'race/' + rid + '/'
         source = get_request_via_get(url)
         output_file = rid + '.csv'
-        hids = scrape_race_info(source, output_file, word)
+        hids = scrape_race_info(source, output_file, words[0])
         horce_dict[rid] = hids
         # scrape RATE data
         scrape_res(url, output_file)
@@ -193,5 +198,8 @@ def main(word):
 
 
 if __name__ == '__main__':
-    word = '皐月賞'
-    main(word)
+    # word = '皐月賞'
+    words = []
+    words.append('皐月賞')
+    words.append('G1')
+    main(words)
