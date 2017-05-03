@@ -58,7 +58,6 @@ def scrape_race_info(source, output_file, word):
         for td in tr.findAll('td', ''):
             # get house status
             word = " ".join(td.text.rsplit())
-            # list.append( word.encode('utf-8') )
             list.append(word)
 
             # get hid
@@ -76,25 +75,22 @@ def scrape_race_info(source, output_file, word):
     return hid_list
 
 
-def scrape_res(url, output_file):
-    # read page source code
+def scrape_res(source, output_file):
     f = open('./../DATA/Result/res_' + output_file, 'w')
     csvWriter = csv.writer(f)
-    soup = BeautifulSoup(urllib.request.urlopen(url), "lxml")
+    soup = BeautifulSoup(source, "lxml")
 
     table = soup.find(class_='pay_block')
     for tr in table.findAll('tr', ''):
         list = []
         th = tr.find('th').string
-        list.append(th.encode('utf-8'))
+        list.append(th)
         for td in tr.findAll('td', ''):
             if td.string == None:
                 td = td.get_text(separator=' ')
-                # print td.encode('utf-8')
-                list.append(td.encode('utf-8'))
+                list.append(td)
             else:
-                # print(td.string.encode('utf-8'))
-                list.append(td.string.encode('utf-8'))
+                list.append(td)
         csvWriter.writerow(list)
     f.close()
 
@@ -181,7 +177,8 @@ def main(words):
         hids = scrape_race_info(source, output_file, words[0])
         horce_dict[rid] = hids
         # scrape RATE data
-        scrape_res(url, output_file)
+        source = get_request_via_get(url)
+        scrape_res(source, output_file)
 
     # 3. get history data of entried horse
     for rid in rids:
