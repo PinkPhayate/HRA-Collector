@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 import urllib.request
 import record_saver as saver
 import codecs
+import string_exchanger as se
 
 DOMAIN = 'http://db.netkeiba.com/'
 
@@ -120,7 +121,8 @@ def normalize_race_odds(years):
         f.write(dump)
 
 def scrape_horse_history(source, output_file):
-    f = open('./../DATA/Horse/' + output_file, 'w')
+    filename = './../DATA/Horse/' + output_file
+    f = open(filename, 'w')
     csvWriter = csv.writer(f)
     soup = BeautifulSoup(source, "lxml")
     soup.prettify(formatter=lambda s: s.replace(u'\xa0', 'None'))
@@ -133,10 +135,14 @@ def scrape_horse_history(source, output_file):
         flg = True
         for td in tr.findAll("td"):
             word = " ".join(td.text.rsplit())
-            list.append(word.encode('utf-8'))
+            list.append(word)
 
         csvWriter.writerow(list)
     f.close()
+    df = se.beautify_df(filename)
+    df.to_csv(filename)
+
+
 
 
 
