@@ -2,16 +2,16 @@ import pandas as pd
 FIELD_LIST = ['良','稍','不','重']
 def beautify_df(filename):
     df = pd.read_csv(filename, header=None)
-    fs = convert_field_status2dummy(df.ix[:,15])
-    dist = divide_columns(df.ix[:,14])
-    df = pd.concat([df.ix[:,:13], dist, fs, df.ix[:,16:]], axis=1)
+    fs = convert_field_status2dummy(df.ix[:,16])
+    dist = divide_columns(df.ix[:,15])
+    df = pd.concat([df.ix[:,:14], dist, fs, df.ix[:,17:]], axis=1)
     # print(df)
     df.to_csv(filename)
 
 # divide field type and course distance
 def divide_columns(d):
     tmp = d.str.extract('(.)([0-9]+)', expand=False)
-    print(tmp)
+    # print(tmp)
     dmy = pd.get_dummies(tmp.ix[:,0])
     df = pd.concat([dmy, tmp.ix[:,1]], axis=1)
     return df

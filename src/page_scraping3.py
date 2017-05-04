@@ -121,6 +121,7 @@ def normalize_race_odds(years):
         f.write(dump)
 
 def scrape_horse_history(source, output_file):
+    # print(output_file)
     filename = './../DATA/Horse/' + output_file
     f = open(filename, 'w')
     csvWriter = csv.writer(f)
@@ -132,10 +133,14 @@ def scrape_horse_history(source, output_file):
         "table", attrs={"class": "db_h_race_results nk_tb_common"})
     for tr in table.findAll('tr'):
         list = []
-        flg = True
         for td in tr.findAll("td"):
             word = " ".join(td.text.rsplit())
             list.append(word)
+            # get race id
+            # aタグのhref属性にraceという文字を含んでいる　かつ　title属性が一文字以上ある
+            for a in td.find_all('a', href=re.compile("race"), title=re.compile(".+")):
+                tmp = a.attrs['href'].split('/')
+                list.append(tmp[2])
 
         csvWriter.writerow(list)
     f.close()
@@ -201,5 +206,10 @@ def main(words):
 
 if __name__ == '__main__':
     # word = '皐月賞'
-    words = [u'NHKマイル']
-    main(words)
+    # words = [u'NHKマイル']
+    # main(words)
+    hid = '2014110014'
+    url = DOMAIN + 'horse/' + hid + '/'
+    source = get_request_via_get(url)
+    output_file = hid + '.csv'
+    scrape_horse_history(source, output_file)
