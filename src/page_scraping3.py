@@ -140,7 +140,6 @@ def scrape_horse_history(source, output_file):
         csvWriter.writerow(list)
     f.close()
     df = se.beautify_df(filename)
-    df.to_csv(filename)
 
 
 

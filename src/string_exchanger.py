@@ -1,11 +1,24 @@
 import pandas as pd
 FIELD_LIST = ['良','稍','不','重']
 def beautify_df(filename):
-    df = pd.read_csv(filename)
+    df = pd.read_csv(filename, header=None)
     fs = convert_field_status2dummy(df.ix[:,15])
-    return fs
+    dist = divide_columns(df.ix[:,14])
+    df = pd.concat([df.ix[:,:13], dist, fs, df.ix[:,16:]], axis=1)
+    # print(df)
+    df.to_csv(filename)
+
+# divide field type and course distance
+def divide_columns(d):
+    tmp = d.str.extract('(.)([0-9]+)', expand=False)
+    print(tmp)
+    dmy = pd.get_dummies(tmp.ix[:,0])
+    df = pd.concat([dmy, tmp.ix[:,1]], axis=1)
+    return df
 
 
+
+#  convert field status
 def convert_field_status2dummy(d):
     [validate_field_status(x) for x in d]
     dmy = pd.get_dummies(d)
@@ -40,6 +53,5 @@ def validate_field_status(e):
         return '4'
 
 # @FOR TEST
-# filename = './../DATA/Horse/2001103151.csv'
-# df = pd.read_csv(filename)
-# beautify_df(df)
+# filename = './../DATA/Horse/2012103129.csv'
+# beautify_df(filename)
