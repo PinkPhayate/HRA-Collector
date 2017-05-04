@@ -6,6 +6,7 @@ import pandas as pd
 from bs4 import BeautifulSoup
 import urllib.request
 import record_saver as saver
+import codecs
 
 DOMAIN = 'http://db.netkeiba.com/'
 
@@ -114,10 +115,9 @@ def normalize_race_odds(years):
             dict[row[0]] = {'num': num, 'odds': row[2]}
 
         odds_dict[y] = dict
-    f = open("./../DATA/Result/odds_dict.json", "w")
-    json.dump(odds_dict, f, ensure_ascii=False)
-    f.close()
-
+    with codecs.open("./../DATA/Result/odds_dict.json",'w','utf-8') as f:
+        dump = json.dumps(odds_dict, ensure_ascii=False)
+        f.write(dump)
 
 def scrape_horse_history(source, output_file):
     f = open('./../DATA/Horse/' + output_file, 'w')
