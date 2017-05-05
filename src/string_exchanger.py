@@ -13,9 +13,9 @@ def divide_columns(d):
     tmp = d.str.extract('(.)([0-9]+)', expand=False)
     # print(tmp)
     dmy = pd.get_dummies(tmp.ix[:,0])
+    dmy = add_columns_ft(dmy)
     df = pd.concat([dmy, tmp.ix[:,1]], axis=1)
     return df
-
 
 
 #  convert field status
@@ -24,10 +24,10 @@ def convert_field_status2dummy(d):
     dmy = pd.get_dummies(d)
     k = len(FIELD_LIST)-len(dmy.columns)
     for i in range(k):
-        dmy = add_columns(dmy)
+        dmy = add_columns_fs(dmy)
     return dmy
 
-def add_columns(dmy):
+def add_columns_fs(dmy):
     if '良' not in dmy.columns:
         dmy['良'] = 0.0
     if '稍' not in dmy.columns:
@@ -38,6 +38,12 @@ def add_columns(dmy):
         dmy['重'] = 0.0
     return dmy
 
+def add_columns_ft(dmy):
+    if 'ダ' not in dmy.columns:
+        dmy['ダ'] = 0.0
+    if '芝' not in dmy.columns:
+        dmy['芝'] = 0.0
+    return dmy
 
 def validate_field_status(e):
     if e == '良':

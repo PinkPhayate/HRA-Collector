@@ -203,13 +203,13 @@ def main(words):
     # normalize rate data
     normalize_race_odds(rids)
 
-
 if __name__ == '__main__':
-    # word = '皐月賞'
-    # words = [u'NHKマイル']
-    # main(words)
-    hid = '2014110014'
-    url = DOMAIN + 'horse/' + hid + '/'
-    source = get_request_via_get(url)
-    output_file = hid + '.csv'
-    scrape_horse_history(source, output_file)
+    word = '皐月賞'
+    words = [u'NHKマイル']
+    main(words)
+# @FOR TEST
+# hid = '2014110014'
+# url = DOMAIN + 'horse/' + hid + '/'
+# source = get_request_via_get(url)
+# output_file = hid + '.csv'
+# scrape_horse_history(source, output_file)
