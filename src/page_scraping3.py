@@ -8,6 +8,8 @@ import urllib.request
 import record_saver as saver
 import codecs
 import string_exchanger as se
+import sql_connector as sqlcn
+# import sql_connector as sqlcn
 
 DOMAIN = 'http://db.netkeiba.com/'
 
@@ -120,8 +122,8 @@ def normalize_race_odds(years):
         dump = json.dumps(odds_dict, ensure_ascii=False)
         f.write(dump)
 
-def scrape_horse_history(source, output_file):
-    # print(output_file)
+def scrape_horse_history(source, hid):
+    output_file = hid + '.csv'
     filename = './../DATA/Horse/' + output_file
     f = open(filename, 'w')
     csvWriter = csv.writer(f)
@@ -144,10 +146,8 @@ def scrape_horse_history(source, output_file):
 
         csvWriter.writerow(list)
     f.close()
-    df = se.beautify_df(filename)
-
-
-
+    # write to mysql
+    sqlcn.save(hid)
 
 
 def get_request_via_post(word):
@@ -198,17 +198,17 @@ def main(words):
             url = DOMAIN + 'horse/' + hid + '/'
             source = get_request_via_get(url)
             output_file = hid + '.csv'
-            scrape_horse_history(source, output_file)
+            scrape_horse_history(source, hid)
 
     # normalize rate data
     normalize_race_odds(rids)
 
 if __name__ == '__main__':
-    word = '皐月賞'
     words = [u'NHKマイル']
     main(words)
+
 # @FOR TEST
-# hid = '2014110014'
+# hid = '2001110060'
 # url = DOMAIN + 'horse/' + hid + '/'
 # source = get_request_via_get(url)
 # output_file = hid + '.csv'
