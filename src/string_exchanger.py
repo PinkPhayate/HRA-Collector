@@ -2,20 +2,22 @@ import pandas as pd
 FIELD_LIST = ['良','稍','不','重']
 def beautify_df(filename):
     df = pd.read_csv(filename, header=None)
-    fs = convert_field_status2dummy(df.ix[:,16])
-    dist = divide_columns(df.ix[:,15])
-    df = pd.concat([df.ix[:,:14], dist, fs, df.ix[:,17:]], axis=1)
-    # print(df)
-    df.to_csv(filename)
+    df =  df.ix[:,:16]
+    dvd = se.divide_columns(df.ix[:,15])
+    df = df.drop([1,6,15],axis=1)
+    df = pd.concat([df,dvd],axis=1)
+    col = ["date","race","whether","race_name","race_id","all","frame","no","odds","fav","rank","jockey","hande","course","course_status","distance"]
+    df.columns = col
+    return df
 
-# divide field type and course distance
 def divide_columns(d):
     tmp = d.str.extract('(.)([0-9]+)', expand=False)
     # print(tmp)
-    dmy = pd.get_dummies(tmp.ix[:,0])
-    dmy = add_columns_ft(dmy)
-    df = pd.concat([dmy, tmp.ix[:,1]], axis=1)
-    return df
+    # dmy = pd.get_dummies(tmp.ix[:,0])
+    # dmy = add_columns_ft(dmy)
+    # df = pd.concat([dmy, tmp.ix[:,1]], axis=1)
+    # return df
+    return tmp
 
 
 #  convert field status
