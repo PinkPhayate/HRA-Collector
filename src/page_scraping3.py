@@ -9,7 +9,7 @@ import record_saver as saver
 import codecs
 import string_exchanger as se
 import sql_connector as sqlcn
-# import sql_connector as sqlcn
+import mongo_connector as mgcon
 
 DOMAIN = 'http://db.netkeiba.com/'
 
@@ -176,6 +176,11 @@ def main(words):
     filename = './../DATA/race_id_list.csv'
     saver.writeCsv(rids, filename)
 
+    sqlcn.save_dict(words[0], rids)
+
+
+
+
     horce_dict = {}
 
     # 2. get list of hource_id who attend the race in year(rid)
@@ -203,9 +208,9 @@ def main(words):
     # normalize rate data
     normalize_race_odds(rids)
 
-if __name__ == '__main__':
-    words = [u'NHKマイル']
-    main(words)
+# if __name__ == '__main__':
+#     words = [u'NHKマイル']
+#     main(words)
 
 # @FOR TEST
 # hid = '2001110060'
@@ -213,3 +218,8 @@ if __name__ == '__main__':
 # source = get_request_via_get(url)
 # output_file = hid + '.csv'
 # scrape_horse_history(source, output_file)
+words = [u'NHKマイル']
+source = get_request_via_post(words[0])
+rids = scrape_rid(words, source)
+mgcon.insert_race_history(words[0], rids)
+mgcon.get_history_rids(u'NHKマイル')
