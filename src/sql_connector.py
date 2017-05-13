@@ -14,15 +14,20 @@ args = {
 def _clean_df(hid):
     output_file = hid + '.csv'
     filename = './../DATA/Horse/' + output_file
-    df = pd.read_csv(filename, header=None)
+    df = pd.read_csv(filename, header=None, encoding='utf8')
     df =  df.ix[:,:16]
     dvd = _divide_columns(df.ix[:,15])
     df = df.drop([1,6,15],axis=1)
     df = pd.concat([df,dvd],axis=1)
     df.loc[:, -1] = int(hid)
-    col = ["date","race","whether","race_name","race_id","all","frame","no","odds","fav","rank","jockey","hande","course","course_status","distance","hid"]
+    col = ["date","weather","race","race_name","race_id","all","frame","no","odds","fav","rank","jockey","hande","course","course_status","distance","hid"]
     df.columns = col
     df = _validate_df(df)
+    #  df['weather'] = df['weather'].apply(lambda x: x.encode('unicode_escape'))
+    # df['race_name'] = df['race_name'].apply(lambda x: x.encode('unicode_escape'))
+    # df['jockey'] = df['jockey'].apply(lambda x: x.encode('unicode_escape'))
+    # df['course'] = df['course'].apply(lambda x: x.encode('unicode_escape'))
+    # df['course_status'] = df['course_status'].apply(lambda x: x.encode('unicode_escape'))
     return df
 
 def _validate_df(df):
@@ -50,13 +55,19 @@ def _divide_columns(d):
 
 def _connect_db(df):
     con = MySQLdb.connect(**args)
+    con.set_character_set('utf8')
+    con.cursor().execute('SET NAMES utf8;')
+    con.cursor().execute('SET CHARACTER SET utf8;')
+    con.cursor().execute('SET character_set_connection=utf8;')
     table_name = "history"
     df.to_sql(table_name, con, flavor='mysql', index=False, if_exists='append')
 
 def save(hid):
     print("start to save history data HID: " + hid)
     df = _clean_df(hid)
+    print(df)
     _connect_db(df)
+
 def save_dict(word, rids):
     print("start to save race-id dict into mysql ")
     insertDb(word, rids)
@@ -93,7 +104,8 @@ def insertDb(word, rids):
         print (e)
 
 # @FOR TEST
-# hid = '2011105000'
-# df = _clean_df(hid)
-# print(df)
-# _connect_db(df)
+hid = '2011105000'
+df = _clean_df(hid)
+df['weather'].apply(lambda x: print(x))
+print(df['weather'])
+_connect_db(df)

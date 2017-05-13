@@ -4,6 +4,7 @@ import json
 import lxml
 import pandas as pd
 from bs4 import BeautifulSoup
+from os import path
 from urllib import request
 import record_saver as saver
 import codecs
@@ -79,11 +80,13 @@ def scrape_race_info(source, output_file, word):
     return hid_list
 
 
-def scrape_res(source, output_file):
+def scrape_res(source, rid):
+    output_file = 'res_' + rid + '.csv'
     f = open('./../DATA/Result/res_' + output_file, 'w')
     csvWriter = csv.writer(f)
     soup = BeautifulSoup(source, "lxml")
 
+    dict, id = {}, 0
     table = soup.find(class_='pay_block')
     for tr in table.findAll('tr', ''):
         list = []
@@ -96,7 +99,11 @@ def scrape_res(source, output_file):
             else:
                 list.append(td)
         csvWriter.writerow(list)
+        dict[str(id)] = list
+        id += 1
     f.close()
+    return dict
+
 
 
 def normalize_race_odds(years):
@@ -173,7 +180,7 @@ def main(words):
     # 1. get supecified race ids
     nosql_connector = mgcon.NOSQL_connector()
 
-    rids = nosql_connector.get_history_rids(race_name=words[0])
+    rids = nosql_connector.get_rids_by_name(race_name=words[0])
     if not rids:
         print('scraping for race_id')
         source = get_request_via_post(words[0])
@@ -184,10 +191,11 @@ def main(words):
 
     horce_dict = {}
 
-    # 2. get list of hource_id who attend the race in year(rid)
+    # 2. get list of hource_id who attends the race in year(rid)
     for rid in rids:
         print('get list of hource_id: ' + rid)
         hids = nosql_connector.get_hids_by_rid(rid=rid)
+        source = None
         if not hids:
             print('scraping for hource_id')
             url = DOMAIN + 'race/' + rid + '/'
@@ -200,20 +208,25 @@ def main(words):
 
         # scrape RATE data
         # TODO: save to nosql
-        url = DOMAIN + 'race/' + rid + '/'
-        source = get_request_via_get(url)
-        output_file = 'res_' + rid + '.csv'
-        scrape_res(source, output_file)
+        # race_results = nosql_connector.get_race_result(rid=rid)
+        output_file = './../DATA/Result/res_' + rid + '.csv'
+        if not path.isfile(output_file):
+            if source is None:
+                print("start to scrape race id: " + rid)
+                url = DOMAIN + 'race/' + rid + '/'
+                source = get_request_via_get(url)
+            dict = scrape_res(source, rid)
+        # nosql_connector.insert_race_result(rid=rid, res_dict=dict)
 
     # 3. get history data of entried horse
-    # for rid in rids:
-    #     print('get history of house in ' + rid)
-    #     old_hids = horce_dict[rid]
-    #     for hid in old_hids:
-    #         url = DOMAIN + 'horse/' + hid + '/'
-    #         source = get_request_via_get(url)
-    #         output_file = hid + '.csv'
-    #         scrape_horse_history(source, hid)
+    for rid in rids:
+        print('get history of house in race that id: ' + rid)
+        old_hids = horce_dict[rid]
+        for hid in old_hids:
+            url = DOMAIN + 'horse/' + hid + '/'
+            source = get_request_via_get(url)
+            output_file = hid + '.csv'
+            scrape_horse_history(source, hid)
 
     # normalize rate data
     normalize_race_odds(rids)
@@ -233,5 +246,5 @@ if __name__ == '__main__':
 # rids = scrape_rid(words, source)
 # nosql_connector = mgcon.NOSQL_connector()
 # nsql.insert_race_history(race_name=words[0], rids=rids)
-# nsql.get_history_rids(race_name=u'NHKマイル')
-# rs_list = nosql_connector.get_history_rids(race_name='NHK')
+# nsql.get_rids_by_name(race_name=u'NHKマイル')
+# rs_list = nosql_connector.get_rids_by_name(race_name='NHK')
