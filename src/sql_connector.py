@@ -65,7 +65,6 @@ def _connect_db(df):
 def save(hid):
     print("start to save history data HID: " + hid)
     df = _clean_df(hid)
-    print(df)
     _connect_db(df)
 
 def save_dict(word, rids):
@@ -106,6 +105,4 @@ def insertDb(word, rids):
 # @FOR TEST
 hid = '2011105000'
 df = _clean_df(hid)
-df['weather'].apply(lambda x: print(x))
-print(df['weather'])
 _connect_db(df)
