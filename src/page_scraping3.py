@@ -4,7 +4,7 @@ import json
 import lxml
 import pandas as pd
 from bs4 import BeautifulSoup
-import urllib.request
+from urllib import request
 import record_saver as saver
 import codecs
 import string_exchanger as se
@@ -153,57 +153,67 @@ def scrape_horse_history(source, hid):
 def get_request_via_post(word):
     # create paramator with consts x=0,y=0,pid=race_list
     _param = _param_creator(word=word)
-    with urllib.request.urlopen(DOMAIN, data=_param.encode('utf8')) as res:
+    with request.urlopen(DOMAIN, data=_param.encode('utf8')) as res:
         html = res.read().decode('euc-jp', 'ignore')
         return html
 
 
 def get_request_via_get(url):
-    source = urllib.request.urlopen(url)
+    source = request.urlopen(url)
     return source
 
 def _param_creator(word):
     prefix = 'y=0&word='
-    keyword = urllib.parse.quote_plus(word, encoding="eucjp")
+    keyword = parse.quote_plus(word, encoding="eucjp")
     suffix = '&pid=race_list&x=0'
     return prefix + keyword + suffix
 
 
 def main(words):
     # 1. get supecified race ids
-    source = get_request_via_post(words[0])
-    rids = scrape_rid(words, source)
-    filename = './../DATA/race_id_list.csv'
-    saver.writeCsv(rids, filename)
+    nosql_connector = mgcon.NOSQL_connector()
 
-    sqlcn.save_dict(words[0], rids)
-
-
-
+    rids = nosql_connector.get_history_rids(race_name=words[0])
+    if not rids:
+        print('scraping for race_id')
+        source = get_request_via_post(words[0])
+        rids = scrape_rid(words, source)
+        # filename = './../DATA/race_id_list.csv'
+        # saver.writeCsv(rids, filename)
+        nosql_connector.insert_race_history(race_name=words[0], rids=rids)
 
     horce_dict = {}
 
     # 2. get list of hource_id who attend the race in year(rid)
     for rid in rids:
         print('get list of hource_id: ' + rid)
+        hids = nosql_connector.get_hids_by_rid(rid=rid)
+        if not hids:
+            print('scraping for hource_id')
+            url = DOMAIN + 'race/' + rid + '/'
+            source = get_request_via_get(url)
+            # doc = source.read()
+            output_file = rid + '.csv'
+            hids = scrape_race_info(source, output_file, words[0])
+            nosql_connector.insert_hids(rid=rid, hids=hids)
+        horce_dict[rid] = hids
+
+        # scrape RATE data
+        # TODO: save to nosql
         url = DOMAIN + 'race/' + rid + '/'
         source = get_request_via_get(url)
-        output_file = rid + '.csv'
-        hids = scrape_race_info(source, output_file, words[0])
-        horce_dict[rid] = hids
-        # scrape RATE data
-        source = get_request_via_get(url)
+        output_file = 'res_' + rid + '.csv'
         scrape_res(source, output_file)
 
     # 3. get history data of entried horse
-    for rid in rids:
-        print('get history of house in ' + rid)
-        old_hids = horce_dict[rid]
-        for hid in old_hids:
-            url = DOMAIN + 'horse/' + hid + '/'
-            source = get_request_via_get(url)
-            output_file = hid + '.csv'
-            scrape_horse_history(source, hid)
+    # for rid in rids:
+    #     print('get history of house in ' + rid)
+    #     old_hids = horce_dict[rid]
+    #     for hid in old_hids:
+    #         url = DOMAIN + 'horse/' + hid + '/'
+    #         source = get_request_via_get(url)
+    #         output_file = hid + '.csv'
+    #         scrape_horse_history(source, hid)
 
     # normalize rate data
     normalize_race_odds(rids)
