@@ -208,9 +208,9 @@ def main(words):
     # normalize rate data
     normalize_race_odds(rids)
 
-# if __name__ == '__main__':
-#     words = [u'NHKマイル']
-#     main(words)
+if __name__ == '__main__':
+    words = [u'NHKマイル']
+    main(words)
 
 # @FOR TEST
 # hid = '2001110060'
@@ -218,8 +218,10 @@ def main(words):
 # source = get_request_via_get(url)
 # output_file = hid + '.csv'
 # scrape_horse_history(source, output_file)
-words = [u'NHKマイル']
-source = get_request_via_post(words[0])
-rids = scrape_rid(words, source)
-mgcon.insert_race_history(words[0], rids)
-mgcon.get_history_rids(u'NHKマイル')
+# words = [u'NHKマイル']
+# source = get_request_via_post(words[0])
+# rids = scrape_rid(words, source)
+# nosql_connector = mgcon.NOSQL_connector()
+# nsql.insert_race_history(race_name=words[0], rids=rids)
+# nsql.get_history_rids(race_name=u'NHKマイル')
+# rs_list = nosql_connector.get_history_rids(race_name='NHK')

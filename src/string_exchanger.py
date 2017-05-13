@@ -14,7 +14,7 @@ def divide_columns(d):
     tmp = d.str.extract('(.)([0-9]+)', expand=False)
     # print(tmp)
     # dmy = pd.get_dummies(tmp.ix[:,0])
-    # dmy = add_columns_ft(dmy)
+    # dmy = add_columns_ft(dmy)n
     # df = pd.concat([dmy, tmp.ix[:,1]], axis=1)
     # return df
     return tmp
