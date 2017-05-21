@@ -9,3 +9,7 @@ This repository works to collect horse data amd race record by crawling web.
 
 
 
+## Environment
++ python 3.6.0
+
+## ForUse
