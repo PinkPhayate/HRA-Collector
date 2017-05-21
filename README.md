@@ -3,3 +3,9 @@
 ## Discription
 This repository works to collect horse data amd race record by crawling web.
 
+## Requirement
++ nosql
++ mysql
+
+
+

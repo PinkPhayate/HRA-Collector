@@ -16,8 +16,8 @@
 	record: {
 				frame: 1,
 				num: 1,
-				age: 3.
-				rank: 1
+				age: 3,
+				rank: 1,
 				.....
 				}
 }
