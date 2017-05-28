@@ -1,0 +1,10 @@
+1. 対象レースの過去10年間分のIDを取得する
+  '/DATA/race_id_list.csv'
+
+2. 1のIDのレースデータを取得
+  'Race/race_id.csv'
+
+3. hourse_dictにkey: race_id, value: 出場した馬のid
+  を辞書形式で保存
+
+4. 出場した馬の全ての記録をスクレイピング
