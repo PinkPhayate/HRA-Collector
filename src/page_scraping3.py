@@ -81,27 +81,26 @@ def scrape_race_info(source, output_file, word):
 
 
 def scrape_res(source, rid):
-    output_file = 'res_' + rid + '.csv'
-    f = open('./../DATA/Result/res_' + output_file, 'w')
-    csvWriter = csv.writer(f)
     soup = BeautifulSoup(source, "lxml")
 
-    dict, id = {}, 0
+    dict = {}
     table = soup.find(class_='pay_block')
     for tr in table.findAll('tr', ''):
-        list = []
         th = tr.find('th').string
-        list.append(th)
+        key = th
+        value = []
         for td in tr.findAll('td', ''):
-            if td.string == None:
-                td = td.get_text(separator=' ')
-                list.append(td)
+            if td.string is None:
+                td = td.get_text(separator='*')
+                td = td.replace(' ', '')
+                td = td.split('*')
+                value.append(td)
             else:
-                list.append(td)
-        csvWriter.writerow(list)
-        dict[str(id)] = list
-        id += 1
-    f.close()
+                td = td.string
+                td = td.replace(' ', '')
+                td = td.replace('→', '-')
+                value.append(td)
+        dict[key] = value
     return dict
 
 
