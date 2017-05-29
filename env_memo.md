@@ -1,12 +1,34 @@
-##mongodb
+#mongodb
 
 + mongodb起動
 
-	```
-	mongod -dbpath /usr/local/var/mongodb
-	```
+```
+mongod -dbpath /usr/local/var/mongodb
 
-### architect
+```
+
++ クライアント側の操作
+
+```
+# 起動
+mongo
+# データベースの確認と使用するデータベース選択
+show dbs
+use hra
+# テーブル一覧を表示
+show collectionss
+# テーブル作成
+db.createCollection('res');
+```
+
+
+## architect
+
+```
+hra - hist	#　key: race_id, value: entried_horses
+
+	- - res #  key* raceid, value: 各馬券のオッズ
+```
 
 ```
 {

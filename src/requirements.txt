@@ -1,0 +1,10 @@
+lxml
+bs4
+beautifulsoup4
+request
+pandas
+flake8
+mysqlclient
+hacking
+flake8-docstrings
+pymongo
