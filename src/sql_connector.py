@@ -13,6 +13,7 @@ args = {
 
 def _clean_df(hid):
     output_file = hid + '.csv'
+    print(output_file)
     filename = './../DATA/Horse/' + output_file
     df = pd.read_csv(filename, header=None, encoding='utf8')
     df =  df.ix[:,:16]
@@ -49,6 +50,7 @@ def _validate_rank(d):
 
 
 def _divide_columns(d):
+    print(d)
     tmp = d.str.extract('(.)([0-9]+)', expand=False)
     return tmp
 
@@ -103,6 +105,6 @@ def insertDb(word, rids):
         print (e)
 
 # @FOR TEST
-hid = '2011105000'
-df = _clean_df(hid)
-_connect_db(df)
+# hid = '2011105000'
+# df = _clean_df(hid)
+# _connect_db(df)

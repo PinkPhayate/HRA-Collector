@@ -215,6 +215,8 @@ def main(words):
                 url = DOMAIN + 'race/' + rid + '/'
                 source = get_request_via_get(url)
             dict = scrape_res(source, rid)
+            nosql_connector.insert_odds(rid=rid, odds_dict=dict)
+
         # nosql_connector.insert_race_result(rid=rid, res_dict=dict)
 
     # 3. get history data of entried horse
