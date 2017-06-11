@@ -8,8 +8,9 @@ args = {
     "database": "hra",
     "user": "root",
     "password": "",
-    "port":3306
+    "port": 3306
 }
+
 
 def _clean_df(hid):
     output_file = hid + '.csv'
