@@ -66,4 +66,28 @@ hra - hist	#　key: race_id, value: entried_horses
 + **mysqlのdumpファイルをgithubかなんかに保存しておかないとマイグレーションできない**
 
 
+### mysql起動時rror
+ERROR 2002 (HY000): Can't connect to local MySQL server through socket '/tmp/mysql.sock' (2)
+/usr/local/var/mysql/~.error
+
++ エラーログ確認
+
++ 解決方法
+mysqlディレクトリの権限が_mysqlになっていたらユーザ名に変更
+
+```
+cd /usr/local/var/
+sudo chown -R phayate mysql
+```
+
+# dockerファイルの作成
+docker-composeを使って、使用するサーバを用意することができる。
+docker-compose.yamlはHRAna-prvtの方にある。
+
+## 接続コマンド
+- mysql
+mysql -u root -p -h 127.0.0.1 --port 3333
+
+- nosql
+接続コマンド分からないけど、接続はできる
 

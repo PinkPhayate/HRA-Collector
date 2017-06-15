@@ -10,3 +10,6 @@ def test_insert_race_odds_into_mongo():
     dict = ps3.scrape_res(source, rid)
     nosql_connector = mgcon.NOSQL_connector()
     nosql_connector.insert_odds(rid=rid, odds_dict=dict)
+
+
+test_insert_race_odds_into_mongo()

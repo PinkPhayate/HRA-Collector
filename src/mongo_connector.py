@@ -3,7 +3,7 @@ import pymongo
 
 class NOSQL_connector(object):
     def __init__(self):
-        self.cli = pymongo.MongoClient('localhost', 27017)
+        self.cli = pymongo.MongoClient('localhost', 27018)
         self.db = self.cli.hra
 
     def _insert_to_nosql(self, dict):
