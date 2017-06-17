@@ -4,13 +4,13 @@ def showUser():
 
     connector = MySQLdb.connect(
             user='root',
-            passwd='',
-            host='localhost',
-            charset='utf-8',
+            passwd='root',
+            port=3333,
+            host='127.0.0.1',
             db='HRA')
 
     cursor = connector.cursor()
-    cursor.execute("show columns from Horse")
+    cursor.execute("show columns from history")
 
     for row in cursor.fetchall():
         print(row)

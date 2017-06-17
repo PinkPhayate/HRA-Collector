@@ -10,6 +10,8 @@ This repository works to collect horse data amd race record by crawling web.
 ```
 docker-compose up
 pip install --r ./src/requirement.txt
+mysql -u root -p -h 127.0.0.1 -P 3333 < hra_2017-05-28.sql
+python test.py
 
 ``
 
