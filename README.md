@@ -4,9 +4,14 @@
 This repository works to collect horse data amd race record by crawling web.
 
 ## Requirement
-+ nosql
-+ mysql
++ mysql(pythonモジュールをインストールするのに必要)
++ docker-compose
+　　
+```
+docker-compose up
+pip install --r ./src/requirement.txt
 
+``
 
 
 ## Environment
