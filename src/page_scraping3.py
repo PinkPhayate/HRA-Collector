@@ -6,11 +6,13 @@ import pandas as pd
 from bs4 import BeautifulSoup
 from os import path
 from urllib import request
+from urllib import parse
 import record_saver as saver
 import codecs
 import string_exchanger as se
 import sql_connector as sqlcn
 import mongo_connector as mgcon
+import logging
 
 DOMAIN = 'http://db.netkeiba.com/'
 
@@ -157,6 +159,7 @@ def scrape_horse_history(source, hid):
 
 
 def get_request_via_post(word):
+    logging.info('send post request to '+DOMAIN)
     # create paramator with consts x=0,y=0,pid=race_list
     _param = _param_creator(word=word)
     with request.urlopen(DOMAIN, data=_param.encode('utf8')) as res:
@@ -165,8 +168,10 @@ def get_request_via_post(word):
 
 
 def get_request_via_get(url):
+    logging.info('send get request to ' + url)
     source = request.urlopen(url)
     return source
+
 
 def _param_creator(word):
     prefix = 'y=0&word='
@@ -181,9 +186,12 @@ def main(words):
 
     rids = nosql_connector.get_rids_by_name(race_name=words[0])
     if not rids:
-        print('scraping for race_id')
+        logging.info('could not find rids from origin.')
         source = get_request_via_post(words[0])
-        rids = scrape_rid(words, source)
+        try:
+            rids = scrape_rid(words, source)
+        except:
+            logging.warning('could not get rids by get_request_via_post')
         # filename = './../DATA/race_id_list.csv'
         # saver.writeCsv(rids, filename)
         nosql_connector.insert_race_history(race_name=words[0], rids=rids)
@@ -191,8 +199,11 @@ def main(words):
     horce_dict = {}
 
     # 2. get list of hource_id who attends the race in year(rid)
+    if not rids:
+        logging.warning('exception has occured. could not find rids ')
+        return
     for rid in rids:
-        print('get list of hource_id: ' + rid)
+        logging.info('get list of hource_id: ' + rid)
         hids = nosql_connector.get_hids_by_rid(rid=rid)
         source = None
         if not hids:
