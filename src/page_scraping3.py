@@ -48,8 +48,8 @@ def _validate_race_title(title, words):
 
 def scrape_race_info(source, output_file, word):
     # read page source code
-    f = open('./../DATA/Race/' + output_file, 'w')
-    csvWriter = csv.writer(f)
+    # f = open('./../DATA/Race/' + output_file, 'w')
+    # csvWriter = csv.writer(f)
     # soup = BeautifulSoup(urllib.request.urlopen(url), "lxml")
     soup = BeautifulSoup(source, "lxml")
     hid_list = []
@@ -61,11 +61,11 @@ def scrape_race_info(source, output_file, word):
         return hid_list
     table = soup.find(class_='race_table_01 nk_tb_common')
     for tr in table.findAll('tr', ''):
-        list = []
+        # list = []
         for td in tr.findAll('td', ''):
             # get house status
             word = " ".join(td.text.rsplit())
-            list.append(word)
+            # list.append(word)
 
             # get hid
             for link in td.findAll('a'):
@@ -74,11 +74,11 @@ def scrape_race_info(source, output_file, word):
                 # if horse instead of /horse/, cannot point at only hid
                 if "/horse/" in link.attrs['href']:
                     tmp = url.split('/')
-                    list.append(tmp[2])
+                    # list.append(tmp[2])
                     hid_list.append(tmp[2])
 
-        csvWriter.writerow(list)
-    f.close()
+        # csvWriter.writerow(list)
+    # f.close()
     return hid_list
 
 
@@ -126,7 +126,7 @@ def normalize_race_odds(years):
             dict[row[0]] = {'num': num, 'odds': row[2]}
 
         odds_dict[y] = dict
-    with codecs.open("./../DATA/Result/odds_dict.json",'w','utf-8') as f:
+    with codecs.open("./../DATA/Result/odds_dict.json", 'w', 'utf-8') as f:
         dump = json.dumps(odds_dict, ensure_ascii=False)
         f.write(dump)
 
@@ -148,7 +148,8 @@ def scrape_horse_history(source, hid):
             list.append(word)
             # get race id
             # aタグのhref属性にraceという文字を含んでいる　かつ　title属性が一文字以上ある
-            for a in td.find_all('a', href=re.compile("race"), title=re.compile(".+")):
+            for a in td.find_all('a', href=re.compile("race"),
+                                 title=re.compile(".+")):
                 tmp = a.attrs['href'].split('/')
                 list.append(tmp[2])
 
@@ -187,11 +188,13 @@ def main(words):
     rids = nosql_connector.get_rids_by_name(race_name=words[0])
     if not rids:
         logging.info('could not find rids from origin.')
+        print('could not find rids from origin.')
         source = get_request_via_post(words[0])
         try:
             rids = scrape_rid(words, source)
-        except:
+        except Exception:
             logging.warning('could not get rids by get_request_via_post')
+            print('could not get rids by get_request_via_post')
         # filename = './../DATA/race_id_list.csv'
         # saver.writeCsv(rids, filename)
         nosql_connector.insert_race_history(race_name=words[0], rids=rids)
@@ -201,9 +204,10 @@ def main(words):
     # 2. get list of hource_id who attends the race in year(rid)
     if not rids:
         logging.warning('exception has occured. could not find rids ')
+        print('exception has occured. could not find rids ')
         return
     for rid in rids:
-        logging.info('get list of hource_id: ' + rid)
+        logging.info('get list of race_id: ' + rid)
         hids = nosql_connector.get_hids_by_rid(rid=rid)
         source = None
         if not hids:
@@ -218,17 +222,19 @@ def main(words):
 
         # scrape RATE data
         # TODO: save to nosql
-        # race_results = nosql_connector.get_race_result(rid=rid)
-        output_file = './../DATA/Result/res_' + rid + '.csv'
-        if not path.isfile(output_file):
-            if source is None:
-                print("start to scrape race id: " + rid)
-                url = DOMAIN + 'race/' + rid + '/'
-                source = get_request_via_get(url)
-            dict = scrape_res(source, rid)
-            nosql_connector.insert_odds(rid=rid, odds_dict=dict)
-
-        # nosql_connector.insert_race_result(rid=rid, res_dict=dict)
+        race_results = nosql_connector.get_race_result(rid=rid)
+        # output_file = './../DATA/Result/res_' + rid + '.csv'
+        # if not path.isfile(output_file):
+        if source is None and race_results is None:
+            print("start to scrape race id: " + rid)
+            url = DOMAIN + 'race/' + rid + '/'
+            source = get_request_via_get(url)
+        if race_results is None:
+            try:
+                dict = scrape_res(source, rid)
+                nosql_connector.insert_odds(rid=rid, odds_dict=dict)
+            except Exception:
+                print('failt to scrape result of race id: '+rid)
 
     # 3. get history data of entried horse
     for rid in rids:
@@ -244,7 +250,7 @@ def main(words):
     normalize_race_odds(rids)
 
 if __name__ == '__main__':
-    words = [u'NHKマイル']
+    words = [u'宝塚記念']
     main(words)
 
 # @FOR TEST
