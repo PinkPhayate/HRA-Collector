@@ -232,7 +232,7 @@ def main(words):
         if race_results is None:
             try:
                 dict = scrape_res(source, rid)
-                nosql_connector.insert_odds(rid=rid, odds_dict=dict)
+                nosql_connector.insert_race_result(rid=rid, res_dict=dict)
             except Exception:
                 print('failt to scrape result of race id: '+rid)
 

@@ -2,9 +2,12 @@ lxml
 bs4
 beautifulsoup4
 request
-pandas
+pandas==0.20.2
 flake8
 mysqlclient
 hacking
+sklearn
+mysqlclient
 flake8-docstrings
-pymongo
+scipy
+mongo
