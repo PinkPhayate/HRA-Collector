@@ -3,11 +3,11 @@ import MySQLdb
 def showUser():
 
     connector = MySQLdb.connect(
-            user='root',
-            passwd='root',
-            port=3333,
-            host='127.0.0.1',
-            db='HRA')
+        user='root',
+        passwd='root',
+        port=3333,
+        host='127.0.0.1',
+        db='HRA')
 
     cursor = connector.cursor()
     cursor.execute("show columns from history")
