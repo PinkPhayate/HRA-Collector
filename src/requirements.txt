@@ -2,7 +2,7 @@ lxml
 bs4
 beautifulsoup4
 request
-pandas==0.20.2
+pandas==0.17
 flake8
 mysqlclient
 hacking

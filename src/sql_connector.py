@@ -57,13 +57,19 @@ def _divide_columns(d):
 
 
 def _connect_db(df):
+    # TODO: pandas must be updated.
+    # from pandas.io import sql
+    # con = MySQLdb.connect()  # may need to add some other options to connect
+    # sql.write_frame(df, con=con, name='table_name_for_df',
+    #                 if_exists='replace', flavor='mysql')
+
     con = MySQLdb.connect(**args)
     con.set_character_set('utf8')
     con.cursor().execute('SET NAMES utf8;')
     con.cursor().execute('SET CHARACTER SET utf8;')
     con.cursor().execute('SET character_set_connection=utf8;')
     table_name = "history"
-    df.to_sql(table_name, con, flavor='mysql', index=False, if_exists='append')
+    df.to_sql(table_name, con=cson, flavor='mysql', index=False, if_exists='append')
 
 def save(hid):
     print("start to save history data HID: " + hid)
