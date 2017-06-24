@@ -69,7 +69,11 @@ def _connect_db(df):
     con.cursor().execute('SET CHARACTER SET utf8;')
     con.cursor().execute('SET character_set_connection=utf8;')
     table_name = "history"
-    df.to_sql(table_name, con=con, flavor='mysql', index=False, if_exists='append')
+    df.to_sql(table_name,
+              con=con,
+              flavor='mysql',
+              index=False,
+              if_exists='append')
 
 def save(hid):
     print("start to save history data HID: " + hid)
