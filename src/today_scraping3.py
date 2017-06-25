@@ -7,7 +7,7 @@ class OddsMan(object):
         source = request.urlopen(url)
         return source
 
-    def find_hid(self, td):
+    def __find_hid(self, td):
         # get hid
         for link in td.findAll('a'):
             url = link.attrs['href']
@@ -15,6 +15,17 @@ class OddsMan(object):
                 tmp = url.split('/')
                 return tmp[4]
         return None
+
+    def __find_rid(self, td):
+        # get rid
+        for link in td.findAll('a'):
+            url = link.attrs['href']
+            if "&" in url:
+                tmp = url.split('&')
+                tmp = tmp[1].split('=')
+                return tmp[1][1:]
+        return None
+
 
     def scrape_race_info(self, source):
         soup = BeautifulSoup(source, "lxml")
@@ -32,7 +43,7 @@ class OddsMan(object):
                 word = " ".join(td.text.rsplit())
                 row.append(word)
 
-                hid = self.find_hid(td)
+                hid = self.__find_hid(td)
                 if hid is not None:
                     row.append(hid)
             df.append(row)
@@ -43,8 +54,13 @@ class OddsMan(object):
         df = []
         body = soup.find(id="race_list_body")
         for col in body.findAll(class_='race_top_hold_list'):
+            row = []
             for div in col.findAll(class_='racename'):
-                print(div.text)
+                rid = self.__find_rid(div)
+                if rid is not None:
+                    row.append(rid)
+            df.append(row)
+        return df
 
     def get_race_odds(self, race_id):
         url = 'http://race.netkeiba.com/?pid=race_old&id=c' + str(race_id)
@@ -56,13 +72,13 @@ class OddsMan(object):
     def get_race_ids(self, date):
         url = 'http://race.netkeiba.com/?pid=race_list&id=c' + str(date)
         source = self.get_request_via_get(url)
-        self.df = self.scrape_race_id(source)
-
-
-
+        df = self.scrape_race_id(source)
+        return df
 
 # race_id = '201702010401'
 odds_man = OddsMan()
+todays_race_id = odds_man.get_race_ids('0625')
+
+
 # odds_dict = odds_man.get_race_odds(race_id)
-odds_dict = odds_man.get_race_ids('0625')
 # print(odds_dict)
