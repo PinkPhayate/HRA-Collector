@@ -1,41 +1,51 @@
-import page_scraping3 as ps3
 from bs4 import BeautifulSoup
+from urllib import request
 
-def find_hid(td):
-    # get hid
-    for link in td.findAll('a'):
-        # if 'href' in link.attrs:
-        url = link.attrs['href']
-        # if horse instead of /horse/, cannot point at only hid
-        if "/horse/" in link.attrs['href']:
-            tmp = url.split('/')
-            return tmp[4]
-    return None
 
-def scrape_race_info(source):
-    soup = BeautifulSoup(source, "lxml")
-    hid_list = []
-    list = []
-    # Extract status
-    title = soup.find('h1')
-    print(title.text)
-    # if title.text is not correct (e.g. another race), remove
-    table = soup.find(class_='race_table_old nk_tb_common')
-    for tr in table.findAll('tr', ''):
-        # list = []
-        for td in tr.findAll('td', ''):
-            # get house status
-            word = " ".join(td.text.rsplit())
-            list.append(word)
+class OddsMan(object):
+    def get_request_via_get(self, url):
+        source = request.urlopen(url)
+        return source
 
-            hid = find_hid(td)
-            if hid is not None:
-                list.append(hid)
+    def find_hid(self, td):
+        # get hid
+        for link in td.findAll('a'):
+            url = link.attrs['href']
+            if "/horse/" in link.attrs['href']:
+                tmp = url.split('/')
+                return tmp[4]
+        return None
 
-    hid_list.append(list)
-    return hid_list
+    def scrape_race_info(self, source):
+        soup = BeautifulSoup(source, "lxml")
+        df = []
+        # Extract status
+        title = soup.find('h1')
+        print(title.text)
+        self.title = title.text
+        # if title.text is not correct (e.g. another race), remove
+        table = soup.find(class_='race_table_old nk_tb_common')
+        for tr in table.findAll('tr', ''):
+            row = []
+            for td in tr.findAll('td', ''):
+                # get house status
+                word = " ".join(td.text.rsplit())
+                row.append(word)
 
-url = 'http://race.netkeiba.com/?pid=race_old&id=c201702010401'
-source = ps3.get_request_via_get(url)
-list = scrape_race_info(source)
-print(list)
+                hid = self.find_hid(td)
+                if hid is not None:
+                    row.append(hid)
+            df.append(row)
+        return df
+
+    def get_race_odds(self, race_id):
+        url = 'http://race.netkeiba.com/?pid=race_old&id=c' + str(race_id)
+        self.source = self.get_request_via_get(url)
+        self.df = self.scrape_race_info(self.source)
+        odds_list = [x[10] for x in self.df if len(x) > 0]
+        return odds_list
+
+# race_id = '201702010401'
+# odds_man = OddsMan()
+# odds_dict = odds_man.get_race_odds(race_id)
+# print(odds_dict)
