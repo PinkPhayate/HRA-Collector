@@ -26,6 +26,17 @@ class OddsMan(object):
                 return tmp[1][1:]
         return None
 
+    def __extract_time(self, text):
+        text = text.strip()
+        time = text[:5]
+        return time
+
+    def find_race_time(self, div):
+        text = div.text
+        time = self.__extract_time(text)
+        if time is not None:
+            return time
+        return None
 
     def scrape_race_info(self, source):
         soup = BeautifulSoup(source, "lxml")
@@ -52,15 +63,23 @@ class OddsMan(object):
     def scrape_race_id(self, source):
         soup = BeautifulSoup(source, "lxml")
         df = []
+        time_df = []
         body = soup.find(id="race_list_body")
         for col in body.findAll(class_='race_top_hold_list'):
             row = []
+            times = []
             for div in col.findAll(class_='racename'):
                 rid = self.__find_rid(div)
                 if rid is not None:
                     row.append(rid)
             df.append(row)
-        return df
+
+            for div in col.findAll(class_='racedata'):
+                time = self.find_race_time(div)
+                if time is not None:
+                    times.append(time)
+            time_df.append(times)
+        return df, time_df
 
     def get_race_odds(self, race_id):
         url = 'http://race.netkeiba.com/?pid=race_old&id=c' + str(race_id)
@@ -72,13 +91,13 @@ class OddsMan(object):
     def get_race_ids(self, date):
         url = 'http://race.netkeiba.com/?pid=race_list&id=c' + str(date)
         source = self.get_request_via_get(url)
-        df = self.scrape_race_id(source)
-        return df
+        df, time_df = self.scrape_race_id(source)
+        print(df, time_df)
 
 # race_id = '201702010401'
 odds_man = OddsMan()
 todays_race_id = odds_man.get_race_ids('0625')
-
+print(todays_race_id)
 
 # odds_dict = odds_man.get_race_odds(race_id)
 # print(odds_dict)
