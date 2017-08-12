@@ -106,30 +106,6 @@ def scrape_res(source, rid):
     return dict
 
 
-
-def normalize_race_odds(years):
-    odds_dict = {}
-    for year in years:
-        y = str(year)
-        output_file = y + '.csv'
-        f = open('./../DATA/Result/res_' + output_file, "rt", encoding='utf-8')
-        dataReader = csv.reader(f)
-        dict = {}
-        for row in dataReader:
-            odds = row[2]
-            if ' ' in odds:
-                odds = odds.split('　')
-            num = row[1].replace('→', '-')
-            num = num.replace(' - ', '-')
-            if ' ' in num:
-                num = num.split('　')
-            dict[row[0]] = {'num': num, 'odds': row[2]}
-
-        odds_dict[y] = dict
-    with codecs.open("./../DATA/Result/odds_dict.json", 'w', 'utf-8') as f:
-        dump = json.dumps(odds_dict, ensure_ascii=False)
-        f.write(dump)
-
 def scrape_horse_history(source, hid):
     output_file = hid + '.csv'
     filename = './../DATA/Horse/' + output_file
@@ -246,11 +222,8 @@ def main(words):
             output_file = hid + '.csv'
             scrape_horse_history(source, hid)
 
-    # normalize rate data
-    normalize_race_odds(rids)
-
 if __name__ == '__main__':
-    words = [u'宝塚記念']
+    words = [u'札幌記念']
     main(words)
 
 # @FOR TEST

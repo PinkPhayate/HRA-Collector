@@ -40,7 +40,7 @@ def _validate_df(df):
 def _validate_race_id(d):
     pattern = r"^\d+$"
     matchOB = re.match(pattern , str(d['race_id']))
-    d['race_id'] = d['race_id'] if matchOB else 'NULL'
+    d['race_id'] = d['race_id'] if matchOB else '0'
     return d
 
 def _validate_rank(d):
