@@ -4,11 +4,11 @@ import MySQLdb
 import re
 import json
 args = {
-    "host": "localhost",
+    "host": "127.0.0.1",
     "database": "hra",
     "user": "root",
-    "password": "",
-    "port": 3306
+    "password": "root",
+    "port": 3333
 }
 
 
@@ -51,7 +51,6 @@ def _validate_rank(d):
 
 
 def _divide_columns(d):
-    print(d)
     tmp = d.str.extract('(.)([0-9]+)', expand=False)
     return tmp
 
@@ -92,7 +91,7 @@ def dbconnect():
         db = MySQLdb.connect(
             host='localhost',
             user='root',
-            passwd='',
+            passwd='root',
             db='hra'
         )
     except Exception as e:
