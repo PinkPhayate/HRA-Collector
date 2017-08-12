@@ -61,7 +61,7 @@ hra - hist	#　key: race_id, value: entried_horses
 	alter table history character set utf8;
 	```
 	もしできない場合：カラムのencodingをutf8mb4に文字コードを変える
-	
+
 
 + **mysqlのdumpファイルをgithubかなんかに保存しておかないとマイグレーションできない**
 
@@ -91,3 +91,7 @@ mysql -u root -p -h 127.0.0.1 --port 3333
 - nosql
 接続コマンド分からないけど、接続はできる
 
+## mysqlの重複しているレコードを除去するSQL
+'''
+DELETE FROM history WHERE uid NOT IN (SELECT min_id from (SELECT MIN(uid) min_id FROM history GROUP BY race_id, hid) tmp);
+'''
