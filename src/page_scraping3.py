@@ -15,7 +15,10 @@ import mongo_connector as mgcon
 import logging
 
 DOMAIN = 'http://db.netkeiba.com/'
-
+TABLE_CLASSES = [
+    'db_h_race_results nk_tb_common',
+    'race_table_01 nk_tb_common',
+]
 def scrape_rid(words, source):
     """
     1. read page source
@@ -39,12 +42,17 @@ def scrape_rid(words, source):
                     list.append(tmp[2])
     return list
 
+def __extract_title(title):
+    if 0 < title.count('('):
+        idx = title.index('(')
+        return title[:idx]
 
 def _validate_race_title(title, words):
+    title = __extract_title(title)
     for word in words:
-        if word not in title:
-            return False
-    return True
+        if word == title:
+            return True
+    return False
 
 def scrape_race_info(source, output_file, word):
     # read page source code
@@ -106,6 +114,30 @@ def scrape_res(source, rid):
     return dict
 
 
+
+def normalize_race_odds(years):
+    odds_dict = {}
+    for year in years:
+        y = str(year)
+        output_file = y + '.csv'
+        f = open('./../DATA/Result/res_' + output_file, "rt", encoding='utf-8')
+        dataReader = csv.reader(f)
+        dict = {}
+        for row in dataReader:
+            odds = row[2]
+            if ' ' in odds:
+                odds = odds.split('　')
+            num = row[1].replace('→', '-')
+            num = num.replace(' - ', '-')
+            if ' ' in num:
+                num = num.split('　')
+            dict[row[0]] = {'num': num, 'odds': row[2]}
+
+        odds_dict[y] = dict
+    with codecs.open("./../DATA/Result/odds_dict.json", 'w', 'utf-8') as f:
+        dump = json.dumps(odds_dict, ensure_ascii=False)
+        f.write(dump)
+
 def scrape_horse_history(source, hid):
     output_file = hid + '.csv'
     filename = './../DATA/Horse/' + output_file
@@ -116,7 +148,10 @@ def scrape_horse_history(source, hid):
     history_df = pd.DataFrame([])
 
     table = soup.find(
-        "table", attrs={"class": "db_h_race_results nk_tb_common"})
+        "table", attrs={"class": "race_table_01 nk_tb_common"})
+    if table is None:
+        table = soup.find(
+            "table", attrs={"class": "db_h_race_results nk_tb_common"})
     for tr in table.findAll('tr'):
         list = []
         for td in tr.findAll("td"):
@@ -162,7 +197,7 @@ def main(words):
     nosql_connector = mgcon.NOSQL_connector()
 
     rids = nosql_connector.get_rids_by_name(race_name=words[0])
-    if not rids:
+    if not rids or True:
         logging.info('could not find rids from origin.')
         print('could not find rids from origin.')
         source = get_request_via_post(words[0])
@@ -218,12 +253,16 @@ def main(words):
         old_hids = horce_dict[rid]
         for hid in old_hids:
             url = DOMAIN + 'horse/' + hid + '/'
+            print(url)
             source = get_request_via_get(url)
             output_file = hid + '.csv'
             scrape_horse_history(source, hid)
 
+    # normalize rate data
+    normalize_race_odds(rids)
+
 if __name__ == '__main__':
-    words = [u'札幌記念']
+    words = [u'菊花賞']
     main(words)
 
 # @FOR TEST
