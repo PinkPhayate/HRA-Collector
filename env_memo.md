@@ -95,3 +95,23 @@ mysql -u root -p -h 127.0.0.1 --port 3333
 '''
 DELETE FROM history WHERE uid NOT IN (SELECT min_id from (SELECT MIN(uid) min_id FROM history GROUP BY race_id, hid) tmp);
 '''
+
+
+### dockerのmysqlに接続
+sudo mysql -h 127.0.0.1 -P 3333 -u root -p
+
+## race_idの意味合い
+
+年-競馬場-回-開催n日目-R
+
+### 競馬場
+01: sapporo
+02: hakodate
+03: hukusima
+04: nigqta
+05: tokyo
+06: nakayana
+07: chukyo
+08:kyoto
+09: hanshin
+10: kokura

@@ -262,5 +262,5 @@ def main(words):
     # normalize_race_odds(rids)
 
 if __name__ == '__main__':
-    words = [u'菊花賞']
+    words = [u'西部スポニチ賞']
     main(words)
