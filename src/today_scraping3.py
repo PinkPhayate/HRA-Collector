@@ -1,103 +1,59 @@
 from bs4 import BeautifulSoup
 from urllib import request
+import urllib.request
+import csv, lxml
+import page_scraping3 as ps
+import mongo_connector as mgcon
+
+DOMAIN = 'http://db.netkeiba.com/'
+def scraping(url, output_file):
+    # read page source code
+    f = open('./../Data/' + output_file, 'w')
+    csvWriter = csv.writer(f)
 
 
-class OddsMan(object):
-    def get_request_via_get(self, url):
-        source = request.urlopen(url)
-        return source
+    soup = BeautifulSoup(request.urlopen(url), "lxml")
+    # Extract status
+    # title = soup.find('h1')
+    # print title.text
 
-    def __find_hid(self, td):
-        # get hid
-        for link in td.findAll('a'):
-            url = link.attrs['href']
-            if "/horse/" in link.attrs['href']:
-                tmp = url.split('/')
-                return tmp[4]
-        return None
+    table = soup.find(class_='race_table_01 nk_tb_common shutuba_table')
+    hid_list = []
+    for tr in table.findAll('tr',''):
+        list = []
+        for td in tr.findAll('td',''):
+            word = " ".join(td.text.rsplit())
+            list.append( word.encode('utf-8') )
 
-    def __find_rid(self, td):
-        # get rid
-        for link in td.findAll('a'):
-            url = link.attrs['href']
-            if "&" in url:
-                tmp = url.split('&')
-                tmp = tmp[1].split('=')
-                return tmp[1][1:]
-        return None
+            # get hid only MAIN horse
+            for link in td.findAll('a'):
+                if 'target' not in link.attrs:  # if not MAIN horse, it doesn't have taget attribute.
+                    break
+                url = link.attrs['href']
+                if "/horse/" in url: # if horse instead of /horse/, cannot point at only hid
+                    tmp = url.split('/')
+                    list.append(tmp[4])
+                    hid_list.append(tmp[4])
 
-    def __extract_time(self, text):
-        text = text.strip()
-        time = text[:5]
-        return time
+        csvWriter.writerow(list)
+    return hid_list
 
-    def find_race_time(self, div):
-        text = div.text
-        time = self.__extract_time(text)
-        if time is not None:
-            return time
-        return None
+if __name__ == '__main__':
 
-    def scrape_race_info(self, source):
-        soup = BeautifulSoup(source, "lxml")
-        df = []
-        # Extract status
-        title = soup.find('h1')
-        print(title.text)
-        self.title = title.text
-        # if title.text is not correct (e.g. another race), remove
-        table = soup.find(class_='race_table_old nk_tb_common')
-        for tr in table.findAll('tr', ''):
-            row = []
-            for td in tr.findAll('td', ''):
-                # get house status
-                word = " ".join(td.text.rsplit())
-                row.append(word)
+    # view.draw_title(version='1.1.0')
+    # view.draw_race_title("Stayer's Stakes")
 
-                hid = self.__find_hid(td)
-                if hid is not None:
-                    row.append(hid)
-            df.append(row)
-        return df
+    rid = '201704020811'       #  TODO : args
+    url = 'http://race.netkeiba.com/?pid=race&id=c'+str(rid)+'&mode=shutuba'
+    output_file = str(rid) + '.csv'
+    # scrape  TARGET RACE data
+    hid_list = scraping(url, output_file=output_file)
+    nosql_connector = mgcon.NOSQL_connector()
+    nosql_connector.insert_hids(rid=rid, hids=hid_list)
 
-    def scrape_race_id(self, source):
-        soup = BeautifulSoup(source, "lxml")
-        df = []
-        time_df = []
-        body = soup.find(id="race_list_body")
-        for col in body.findAll(class_='race_top_hold_list'):
-            row = []
-            times = []
-            for div in col.findAll(class_='racename'):
-                rid = self.__find_rid(div)
-                if rid is not None:
-                    row.append(rid)
-            df.append(row)
-
-            for div in col.findAll(class_='racedata'):
-                time = self.find_race_time(div)
-                if time is not None:
-                    times.append(time)
-            time_df.append(times)
-        return df, time_df
-
-    def get_race_odds(self, race_id):
-        url = 'http://race.netkeiba.com/?pid=race_old&id=c' + str(race_id)
-        source = self.get_request_via_get(url)
-        self.df = self.scrape_race_info(source)
-        odds_list = [x[10] for x in self.df if len(x) > 0]
-        return odds_list
-
-    def get_race_ids(self, date):
-        url = 'http://race.netkeiba.com/?pid=race_list&id=c' + str(date)
-        source = self.get_request_via_get(url)
-        df, time_df = self.scrape_race_id(source)
-        print(df, time_df)
-
-# race_id = '201702010401'
-odds_man = OddsMan()
-todays_race_id = odds_man.get_race_ids('0625')
-print(todays_race_id)
-
-# odds_dict = odds_man.get_race_odds(race_id)
-# print(odds_dict)
+    for hid in hid_list:
+        url = DOMAIN + 'horse/' + hid + '/'
+        print(url)
+        source = ps.get_request_via_get(url)
+        output_file = hid + '.csv'
+        ps.scrape_horse_history(source, hid)
